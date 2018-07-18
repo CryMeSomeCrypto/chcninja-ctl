@@ -1,0 +1,132 @@
+<?php
+
+/*
+    This file is part of CHC Ninja.
+    https://github.com/crymesomecrypto/chcninja-ctl
+
+    CHC Ninja is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CHC Ninja is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CHC Ninja.  If not, see <http://www.gnu.org/licenses/>.
+
+ */
+
+// Copy this files to cmn.config.inc.php and change the values as you wish
+
+// Check we are run part of a script and not standalone
+if (!defined('CMN_SCRIPT') || (CMN_SCRIPT !== true)) {
+  die("Not executable.\n");
+}
+
+// Path and regex to nodes
+//  Path to nodes
+DEFINE('CMN_PID_PATH','/home/');
+//  Username of the p2pool node
+DEFINE('CMN_P2POOL_UNAME','p2pool');
+//  Prefix for masternode usernames
+DEFINE('CMN_PID_PREFIX','cmn');
+//  Regex for masternode usernames
+DEFINE('CMN_PID_REGEX',"/cmn(\d\d*)/");
+
+// Default path to chaincoind
+DEFINE('CMN_TERRACOIND_DEFAULT','/usr/local/bin/chaincoind');
+
+// How much to wait for start/stop before giving up (in seconds)
+DEFINE('CMN_STOPWAIT',10);
+
+// Nice level for mainnet and testnet nodes
+DEFINE('CMN_NICELEVEL_MAIN',10);
+DEFINE('CMN_NICELEVEL_TEST',18);
+
+// How many successive times a node can be notresponding before force-stop or restart
+DEFINE('CMN_NRCOUNT',3);
+DEFINE('CMN_NRCOUNT_TEST',6);
+// Where to store the counter file
+DEFINE('CMN_NRCOUNTDIR','/tmp/');
+// Log NRs
+DEFINE('CMN_NRCOUNTLOG','/var/log/cmn/nrcount.log');
+
+// Parallel threads (for start-stop and RPC commands)
+DEFINE('CMN_THREADS_MAX',8);
+
+DEFINE('CMN_CTLSTATUSAUTO_MAIN_SEMAPHORE','/var/run/cmnctlstatusauto0.pid');
+DEFINE('CMN_CTLSTATUSAUTO_TEST_SEMAPHORE','/var/run/cmnctlstatusauto1.pid');
+
+// Port checker specifics
+//  Semaphore for multi-threading (only allow 1 instance)
+DEFINE('CMN_PORTCHECK_SEMAPHORE','/var/run/cmnportcheck.pid');
+//  Time-out for checking port after this number of seconds
+DEFINE('CMN_PORTCHECK_TIMEOUT',4);
+//  Interval between checks for a node (in seconds)
+DEFINE('CMN_PORTCHECK_INTERVAL',3600);
+
+// Balancer retriever specifics
+//  Semaphore file (only allow 1 instance)
+DEFINE('CMN_BALANCE_SEMAPHORE','/var/run/cmnbalance.pid');
+//  Interval between balance retrieval for a pubkey (in seconds)
+DEFINE('CMN_BALANCE_INTERVAL',900);
+//  URL for testnet balance retrieval (abe explorer API)
+DEFINE('CMN_BALANCE_URL_TESTNET','http://127.0.0.1:3002/api/addr/%%p%%/balance');
+//  URL for mainnet balance retrieval (abe explorer API)
+DEFINE('CMN_BALANCE_URL_MAINNET','http://127.0.0.1:3001/api/addr/%%p%%/balance');
+
+// Block Parser specifics
+//  Semaphore file (only allow 1 instance)
+DEFINE('CMN_BLOCKPARSER_SEMAPHORE','/var/run/cmnblockparser.pid');
+//  Activate archival (if disabled files are deleted once consumed)
+DEFINE('CMN_BLOCKPARSER_ARCHIVE_DO',false);
+//  Folder to archive json files (username subfolders will be created)
+DEFINE('CMN_BLOCKPARSER_ARCHIVE','/home/chaincoin-blkhist/archive/current/');
+//  Folder to archive longterm (multiple json files together per username)
+DEFINE('CMN_BLOCKPARSER_ARCHIVE_LONGTERM','/home/chaincoin-blkhist/archive/longterm/');
+//  Minimum number of files to tar together for longterm archiving
+DEFINE('CMN_BLOCKPARSER_ARCHIVE_LONGTERM_MIN',576);
+
+// Third parties fetching configuration
+//  CHC Whale partner ID
+DEFINE('CMN_CHCWHALE_PARTNERID', '000000000000');
+
+// Auto-Update URLs
+//  Testnet binary (Chaincoin server)
+DEFINE('CMN_AUTOUPDATE_TEST','https://chaincoin.io/bin/chaincoin-core-current/chaincoin-0.12.2-x86_64-linux-gnu.tar.gz');
+//  Semaphore
+DEFINE('CMN_AUTOUPDATE_SEMAPHORE','/var/run/cmnautoupdate.pid');
+
+// Command Download specifics
+//  Download folder
+DEFINE('CMN_CDL_DIR','/var/www/chaincoin/download/');
+//  Download URL
+DEFINE('CMN_CDL_URL','https://cdl.yourdomain.tk/');
+
+// Direct access to DB (should not be used)
+DEFINE('CMNCTLMYSQLUSER','chc-mnninja-com');
+DEFINE('CMNCTLMYSQLPASS','yourrandompassword');
+DEFINE('CMNCTLMYSQLDATABASE','chc_ninja');
+DEFINE('CMNCTLMYSQLHOST','localhost');
+
+// Webservice configuration
+//  Public API end-point
+define('CMN_URL_API','https://yourdomain.tk/api');
+//  Private API end-point
+define('CMN_URL_CMD','https://cmd.yourdomain.tk');
+//  Private API SSL configuration (you need a CA, certificate and private key for this hub client)
+define('CMN_SSL_CAINFO','/usr/share/ca-certificates/yourdomain.tk/CHCNinja_CA_Root.crt');
+define('CMN_SSL_CERT','/etc/ssl/private/hub01.cmd.yourdomain.tk.crt');
+define('CMN_SSL_KEY','/etc/ssl/private/hub01.cmd.yourdomain.tk.key');
+//  Private API interface to use
+define('CMN_INTERFACE','::1');
+//  first 2 digits of RPC port
+define('CMNCTLRPCPORTVAL',10);
+
+// Indicate the configuration was loaded
+DEFINE('CMN_CONFIG',true);
+
+?>

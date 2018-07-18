@@ -1,0 +1,87 @@
+#!/usr/bin/php
+<?php
+
+/*
+    This file is part of CHC Ninja.
+    https://github.com/crymesomecrypto/chcninja-ctl
+
+    CHC Ninja is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CHC Ninja is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CHC Ninja.  If not, see <http://www.gnu.org/licenses/>.
+
+ */
+
+require_once("chc.functions.inc.php");
+
+function tempdir($prefix='php') {
+    $tempfile=tempnam(sys_get_temp_dir(),$prefix);
+    if (file_exists($tempfile)) { unlink($tempfile); }
+    mkdir($tempfile);
+    if (is_dir($tempfile)) { return $tempfile; }
+}
+
+function local_delTree($dir) {
+  $files = array_diff(scandir($dir), array('.','..'));
+  foreach ($files as $file) {
+    (is_dir("$dir/$file")) ? local_delTree("$dir/$file") : unlink("$dir/$file");
+  }
+  return rmdir($dir);
+}
+
+xecho("chaincoind auto updater (testnet) v1.0\n");
+xecho("Retrieving current latest binary date and size: ");
+$test = get_headers("https://github.com/chaincoin/chaincoin/archive/v0.16.1.tar.gz", 1);
+echo $test["Last-Modified"]."\n";
+
+$datanew = sha1(serialize(array("Last-Modified" => $test["Last-Modified"],
+                                "Content-Length" => $test["Content-Length"])));
+xecho("Retrieving current binary date and size: ");
+$dataold = file_get_contents(CHC_DIR."/chaincoindupdate.php.lasthash");
+echo "OK\n";
+
+if ($datanew != $dataold) {
+  file_put_contents(CHC_DIR."/chaincoindupdate.php.lasthash",$datanew);
+  xecho("Stopping testnet nodes... ");
+  passthru(CHC_DIR."/chcctl stop testnet");
+  passthru(CHC_DIR."/chcctl stop testnet p2pool");
+  xecho("Reseting data (not the blockchain/wallet)... ");
+  passthru(CHC_DIR."/chcreset test tchc01",$output);
+  passthru(CHC_DIR."/chcreset test tchc02");
+  passthru(CHC_DIR."/chcreset test tchc03");
+  passthru(CHC_DIR."/chcreset test tchc04");
+  passthru(CHC_DIR."/chcreset test tp2pool");
+  xecho("Getting new binary: ");
+  $tmpdir = tempdir("chaincoindupdater");
+  $curdir = getcwd();
+  chdir($tmpdir);
+  passthru("wget -q https://github.com/chaincoin/chaincoin/archive/v0.16.1.tar.gz");
+  echo "OK... Untar: ";
+  passthru("tar xvf chaincoin-0.12.2-x86_64-linux-gnu.tar.gz");
+  echo "OK... Version: ";
+  $fnam = $tmpdir."/chaincoin-0.12.2/bin/chaincoind";
+  $versionraw = chc_chaincoindversion($fnam);
+  echo $versionraw."... Moving: ";
+  $fnamnew = "/opt/chaincoind/0.12/chaincoind-$versionraw";
+  rename($fnam,$fnamnew);
+  echo "OK... Submitting to DB: ";
+  passthru(CHC_DIR."/chcctl version $fnamnew $versionraw 1 1");
+  echo "OK\n";
+  chdir($curdir);
+  local_delTree($tmpdir);
+  xecho("Starting testnet nodes with re-index... ");
+  unlink("/var/www/chcninja/cache/chcninja_cmd_getnodes_1");
+  passthru(CHC_DIR."/chcctl start testnet masternode reindex");
+  passthru(CHC_DIR."/chcctl start testnet p2pool reindex");
+  echo "OK\n";
+}
+
+?>
